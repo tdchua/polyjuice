@@ -4,6 +4,7 @@ import matplotlib as mpl
 import numpy as np
 from PIL import Image as img
 from keras import layers
+from keras.utils import multi_gpu_model
 from keras.layers import Input, Dense, Conv2D, MaxPooling2D, UpSampling2D
 from keras.models import Model
 from keras.callbacks import TensorBoard
