@@ -39,8 +39,8 @@ if __name__ == "__main__":
   os.system("clear")
 
   encoding                  = True
-  training_A                = False
-  training_A_dump           = False
+  training_A                = True
+  training_A_dump           = True
   training_B                = False
   load_training_A           = False
   training_B_dump           = False
@@ -128,6 +128,7 @@ if __name__ == "__main__":
     decoded = Conv2D(3, (3, 3), activation='sigmoid', padding='same', name='dec_B_conv2d_4')(x)
 
     autoencoder = Model(input_img, decoded)
+    autoencoder = multi_gpu_model(Model)
     autoencoder.compile(optimizer='adadelta', loss='mean_absolute_error')
 
     if(load_training_A == True):
@@ -166,6 +167,7 @@ if __name__ == "__main__":
     decoded = Conv2D(3, (3, 3), activation='sigmoid', padding='same', name='dec_A_conv2d_4')(x)
 
     autoencoder = Model(input_img, decoded)
+    autoencoder = multi_gpu_model(Model)
     autoencoder.compile(optimizer='adadelta', loss='mean_absolute_error')
 
     print(autoencoder.layers)
