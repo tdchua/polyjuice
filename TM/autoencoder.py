@@ -39,13 +39,16 @@ if __name__ == "__main__":
   os.system("clear")
 
   encoding                  = True
-  training_A                = True
+  training_A                = False
   training_A_dump           = False
   training_B                = False
   load_training_A           = False
   training_B_dump           = False
   already_trained_model     = False
+  load_training_A           = False
   load_training_B           = False
+
+  image_size                = 128
 
   if(encoding == True):
     print("Encoding Phase")
@@ -64,7 +67,7 @@ if __name__ == "__main__":
 
   if(training_A == True):
 
-    input_img = Input(shape=(64,64,3))
+    input_img = Input(shape=(image_size,image_size,3))
     x = Conv2D(16, (3, 3), activation='relu', padding='same', name='enc_conv2d_1')(input_img)
     x = MaxPooling2D((2, 2), padding='same', name='enc_maxpool_1')(x)
     x = Conv2D(8, (3, 3), activation='relu', padding='same', name='enc_conv2d_2')(x)
@@ -83,6 +86,7 @@ if __name__ == "__main__":
     #MODEL Instantiation : https://blog.keras.io/building-autoencoders-in-keras.html
 
     autoencoder = Model(input_img, decoded)
+    autoencoder = multi_gpu_model(Model)
     autoencoder.compile(optimizer='adadelta', loss='mean_absolute_error')
 
     #Stats of the network https://laid.delanover.com/debugging-a-keras-neural-network/
@@ -93,7 +97,7 @@ if __name__ == "__main__":
 
     print("Training Phase")
     norm_training_data = [x/255 for x in training_data] #normalizing the data
-    x_train = np.reshape(norm_training_data, (len(training_data), 64, 64, 3))
+    x_train = np.reshape(norm_training_data, (len(training_data), image_size, image_size, 3))
     autoencoder.fit(x_train,
                     x_train,
                     # epochs=1,
@@ -107,7 +111,7 @@ if __name__ == "__main__":
 
   if(training_B == True):
 
-    input_img = Input(shape=(64,64,3))
+    input_img = Input(shape=(image_size,image_size,3))
     x = Conv2D(16, (3, 3), activation='relu', padding='same', name='enc_conv2d_1')(input_img)
     x = MaxPooling2D((2, 2), padding='same', name='enc_maxpool_1')(x)
     x = Conv2D(8, (3, 3), activation='relu', padding='same', name='enc_conv2d_2')(x)
@@ -131,7 +135,7 @@ if __name__ == "__main__":
 
     print("Training Phase")
     norm_training_data = [x/255 for x in training_data] #normalizing the data
-    x_train = np.reshape(norm_training_data, (len(training_data), 64, 64, 3))
+    x_train = np.reshape(norm_training_data, (len(training_data), image_size, image_size, 3))
     autoencoder.fit(x_train,
                     x_train,
                     # epochs=1,
@@ -145,7 +149,7 @@ if __name__ == "__main__":
 
   if(already_trained_model == True):
 
-    input_img = Input(shape=(64,64,3))
+    input_img = Input(shape=(image_size,image_size,3))
     x = Conv2D(16, (3, 3), activation='relu', padding='same', name='enc_conv2d_1')(input_img)
     x = MaxPooling2D((2, 2), padding='same', name='enc_maxpool_1')(x)
     x = Conv2D(8, (3, 3), activation='relu', padding='same', name='enc_conv2d_2')(x)
@@ -153,13 +157,13 @@ if __name__ == "__main__":
     x = Conv2D(8, (3, 3), activation='relu', padding='same', name='enc_conv2d_3')(x)
     encoded = MaxPooling2D((2, 2), padding='same', name='enc_maxpool_3')(x)
 
-    x = Conv2D(8, (3, 3), activation='relu', padding='same', name='dec_B_conv2d_1')(encoded)
-    x = UpSampling2D((2, 2), name='dec_B_upsampl_1')(x)
-    x = Conv2D(8, (3, 3), activation='relu', padding='same', name='dec_B_conv2d_2')(x)
-    x = UpSampling2D((2, 2), name='dec_B_upsampl_2')(x)
-    x = Conv2D(16, (3, 3), activation='relu', padding='same', name='dec_B_conv2d_3')(x)
-    x = UpSampling2D((2, 2), name='dec_B_upsampl_3')(x)
-    decoded = Conv2D(3, (3, 3), activation='sigmoid', padding='same', name='dec_B_conv2d_4')(x)
+    x = Conv2D(8, (3, 3), activation='relu', padding='same', name='dec_A_conv2d_1')(encoded)
+    x = UpSampling2D((2, 2), name='dec_A_upsampl_1')(x)
+    x = Conv2D(8, (3, 3), activation='relu', padding='same', name='dec_A_conv2d_2')(x)
+    x = UpSampling2D((2, 2), name='dec_A_upsampl_2')(x)
+    x = Conv2D(16, (3, 3), activation='relu', padding='same', name='dec_A_conv2d_3')(x)
+    x = UpSampling2D((2, 2), name='dec_A_upsampl_3')(x)
+    decoded = Conv2D(3, (3, 3), activation='sigmoid', padding='same', name='dec_A_conv2d_4')(x)
 
     autoencoder = Model(input_img, decoded)
     autoencoder.compile(optimizer='adadelta', loss='mean_absolute_error')
@@ -171,13 +175,15 @@ if __name__ == "__main__":
       print("Input shape: "+str(layer.input_shape)+". Output shape: "+str(layer.output_shape))
 
 
+    if(load_training_A == True):
+      autoencoder.load_weights('weights_decoder_a.h5', by_name=True)
     if(load_training_B == True):
       autoencoder.load_weights('weights_decoder_b.h5', by_name=True)
 
-    digital_image = img.open("../data/tim/extract/size_change/3.png").convert("RGB")
-    test_input = np.reshape(np.asarray(digital_image), (1, 64, 64, 3))
+    digital_image = img.open("../data/tim/extract/size_change/6.png").convert("RGB")
+    test_input = np.reshape(np.asarray(digital_image), (1, image_size, image_size, 3))
     my_output = autoencoder.predict(test_input / 255)
-    my_output = np.reshape(my_output, (64, 64, 3)) * 255
+    my_output = np.reshape(my_output, (image_size, image_size, 3)) * 255
     # print(my_output[0])
     plt.imshow((my_output).astype(np.uint8))
     plt.show()
