@@ -42,12 +42,12 @@ if __name__ == "__main__":
   encoding                  = True
   training_A                = False
   training_A_dump           = False
-  training_B                = True
-  load_training_A           = True
-  training_B_dump           = True
-  already_trained_model     = False
+  training_B                = False
   load_training_A           = False
-  load_training_B           = False
+  training_B_dump           = False
+  already_trained_model     = True
+  load_training_A           = False
+  load_training_B           = True
 
   image_size                = 128
 
@@ -157,13 +157,13 @@ if __name__ == "__main__":
     x = Conv2D(8, (3, 3), activation='relu', padding='same', name='enc_conv2d_3')(x)
     encoded = MaxPooling2D((2, 2), padding='same', name='enc_maxpool_3')(x)
 
-    x = Conv2D(8, (3, 3), activation='relu', padding='same', name='dec_A_conv2d_1')(encoded)
-    x = UpSampling2D((2, 2), name='dec_A_upsampl_1')(x)
-    x = Conv2D(8, (3, 3), activation='relu', padding='same', name='dec_A_conv2d_2')(x)
-    x = UpSampling2D((2, 2), name='dec_A_upsampl_2')(x)
-    x = Conv2D(16, (3, 3), activation='relu', padding='same', name='dec_A_conv2d_3')(x)
-    x = UpSampling2D((2, 2), name='dec_A_upsampl_3')(x)
-    decoded = Conv2D(3, (3, 3), activation='sigmoid', padding='same', name='dec_A_conv2d_4')(x)
+    x = Conv2D(8, (3, 3), activation='relu', padding='same', name='dec_B_conv2d_1')(encoded)
+    x = UpSampling2D((2, 2), name='dec_B_upsampl_1')(x)
+    x = Conv2D(8, (3, 3), activation='relu', padding='same', name='dec_B_conv2d_2')(x)
+    x = UpSampling2D((2, 2), name='dec_B_upsampl_2')(x)
+    x = Conv2D(16, (3, 3), activation='relu', padding='same', name='dec_B_conv2d_3')(x)
+    x = UpSampling2D((2, 2), name='dec_B_upsampl_3')(x)
+    decoded = Conv2D(3, (3, 3), activation='sigmoid', padding='same', name='dec_B_conv2d_4')(x)
 
     autoencoder = Model(input_img, decoded)
     autoencoder.compile(optimizer='adadelta', loss='mean_absolute_error')
@@ -180,10 +180,13 @@ if __name__ == "__main__":
     if(load_training_B == True):
       autoencoder.load_weights('weights_decoder_b.h5', by_name=True)
 
-    digital_image = img.open("../data/tim/extract/size_change/6.png").convert("RGB")
-    test_input = np.reshape(np.asarray(digital_image), (1, image_size, image_size, 3))
-    my_output = autoencoder.predict(test_input / 255)
-    my_output = np.reshape(my_output, (image_size, image_size, 3)) * 255
-    # print(my_output[0])
-    plt.imshow((my_output).astype(np.uint8))
-    plt.show()
+    image_number = '3'
+    while(image_number != "stop"):
+      digital_image = img.open("../data/tim/extract/size_change/" + image_number + ".png").convert("RGB")
+      test_input = np.reshape(np.asarray(digital_image), (1, image_size, image_size, 3))
+      my_output = autoencoder.predict(test_input / 255)
+      my_output = np.reshape(my_output, (image_size, image_size, 3)) * 255
+      # print(my_output[0])
+      plt.imshow((my_output).astype(np.uint8))
+      plt.show()
+      image_number = input("Input image number: ")
