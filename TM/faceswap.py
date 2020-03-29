@@ -1,5 +1,6 @@
 import time
 import os
+import psutil
 import face_recognition
 import matplotlib as mpl
 import numpy as np
@@ -219,14 +220,27 @@ if __name__ == "__main__":
       print(face_path, t,r,b,l)
       my_face = img.open(face_path)
       t,r,b,l = map(int,[t,r,b,l])
+
+
+      #We adjust the cropped image to include the shape of my face and my hair
+      l = l - 50
+      t = t - 300
+      r = r + 50
+      b = b + 150
+
+      orig_width = r - l
+      orig_length = b - t
+
       my_face_cropped = my_face.crop((l,t,r,b)) #Crops the image of my face from the image
-      orig_length = r - l
-      orig_width = b - t
+      my_face_cropped.show()
+      time.sleep(5)
 
       #Resize Section
       my_small_face = my_face_cropped.resize((64,64))
-      # my_small_face.show()
+      # my_small_face_copy = my_small_face.copy()
       my_small_face = np.reshape(np.asarray(my_small_face), (1, image_size, image_size, 3)) #Changes it into 64,64,3
+      # my_small_face_copy.show()
+      # time.sleep(5)
 
       #Normalizing the Photo
       my_small_face_norm = my_small_face / 255
@@ -237,7 +251,7 @@ if __name__ == "__main__":
       swap_to_harry = swap_to_harry.astype(np.uint8)
       swap_harry_img = img.fromarray(swap_to_harry, 'RGB')
       # swap_harry_img.show()
-
+      # time.sleep(5)
 
       #Reshaping the output image
       my_harry_face = swap_harry_img.resize((orig_width,orig_length))
@@ -248,6 +262,7 @@ if __name__ == "__main__":
       face_path_split = face_path.split('/')
       my_face_copy.save(face_path_split[0] + '/' + face_path_split[1] + '/' + "faceswap_frames" + '/' + face_path_split[3])
       # my_face_copy.show()
+      # time.sleep(5)
 
 
     # image_number = '1'
