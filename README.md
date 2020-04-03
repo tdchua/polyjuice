@@ -12,8 +12,11 @@ This project was made to complete the requirement for the internship of **Thinki
     2. Faceswap - GAN Simplified
 3. Experimentation
     1. Training
-      1. Keras - Basic CNN
-      2. Faceswap-GAN Simplified
+        1. Keras - Basic CNN
+        2. Faceswap-GAN Simplified
+            1. BatchSize=32
+            2. BatchSize=64
+            3. BatchSize=32, Epoch=100, Training Data: No Glasses
     2. Testing
 4. Generating the Video
 5. Filepath
